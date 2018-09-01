@@ -1,14 +1,14 @@
 <template>
   <el-main>
     <el-row>
-      <el-form :model="numberValidateForm" ref="numberValidateForm" label-width="100px" class="demo-ruleForm">
+      <el-form :model="numberValidateForm" ref="numberValidateForm" label-width="120px" class="demo-ruleForm">
         <el-form-item label="手机号码" prop="phone"
           :rules="[
             { required: true, message: '手机号码不能为空'},
             { type: 'number', message: '手机号码必须为数字值'}
           ]"
         >
-          <el-input type="phone" v-model.number="numberValidateForm.phone" auto-complete="off"></el-input>
+          <el-input type="phone" v-model.number="numberValidateForm.phone" auto-complete="off" style="width: 300px;"></el-input>
         </el-form-item>
         <el-form-item>
           <!-- <el-button type="primary" @click="submitForm('numberValidateForm')">提交</el-button> -->
@@ -16,18 +16,32 @@
           <el-button @click="resetForm('numberValidateForm')">重置</el-button>
         </el-form-item>
       </el-form>
+      <br><br>
       <el-form :label-position="labelPosition" label-width="120px" :model="formDetail">
-        <el-form-item label="手机号码"><el-input v-model="formDetail.phoneNo"></el-input></el-form-item>
-        <el-form-item label="备注"><el-input v-model="formDetail.remark"></el-input></el-form-item>
-        <el-form-item label="车牌号"><el-input v-model="formDetail.plateNo"></el-input></el-form-item>
-        <el-form-item label="公里数"><el-input v-model="formDetail.milage"></el-input></el-form-item>
-        <el-form-item label="打蜡次数"><el-input v-model="formDetail.wax"></el-input></el-form-item>
-        <el-form-item label="精洗次数"><el-input v-model="formDetail.wash"></el-input></el-form-item>
-        <el-form-item label="抛光次数"><el-input v-model="formDetail.polish"></el-input></el-form-item>
-        <el-form-item label="车内消毒次数"><el-input v-model="formDetail.disinfection"></el-input></el-form-item>
+        <el-form-item label="手机号码"><el-input v-model="formDetail.phoneNo" readonly style="width: 300px;"></el-input></el-form-item>
+        <el-form-item label="车牌号"><el-input v-model="formDetail.plateNo" style="width: 300px;"></el-input></el-form-item>
+        <el-form-item label="公里数"><el-input v-model="formDetail.milage" style="width: 300px;"></el-input></el-form-item>
+        <el-form-item label="打蜡次数">
+          <el-input v-model="formDetail.wax" style="width: 300px;"></el-input>
+          <el-button type="warning" @click="service('wax')" style="margin-left: 10px;">进行打蜡</el-button>
+        </el-form-item>
+        <el-form-item label="精洗次数">
+          <el-input v-model="formDetail.wash" style="width: 300px;"></el-input>
+          <el-button type="warning" @click="service('wash')" style="margin-left: 10px;">进行精洗</el-button>
+        </el-form-item>
+        <el-form-item label="抛光次数">
+          <el-input v-model="formDetail.polish" style="width: 300px;"></el-input>
+          <el-button type="warning" @click="service('polish')" style="margin-left: 10px;">进行抛光</el-button>
+        </el-form-item>
+        <el-form-item label="车内消毒次数">
+          <el-input v-model="formDetail.disinfection" style="width: 300px;"></el-input>
+          <el-button type="warning" @click="service('disinfection')" style="margin-left: 10px;">进行消毒</el-button>
+        </el-form-item>
+        <el-form-item label="备注"><el-input v-model="formDetail.remark" style="width: 300px;"></el-input></el-form-item>
+      <el-button type="warning" @click="modify()">修改</el-button>
       </el-form>
     </el-row>
-    <br>
+    <br><br><br>
     <el-row>
       <el-button type="primary" v-on:click="queryAll">查询全部</el-button>
       <el-table :data="tables.slice( (pageIndex-1)*pageSize, pageIndex*pageSize )">
@@ -123,6 +137,56 @@ export default {
           this.formDetail.wash = res.data.wash
           this.formDetail.polish = res.data.polish
           this.formDetail.disinfection = res.data.disinfection
+      });
+    },
+    modify() {
+      let postData = this.$qs.stringify({
+          "phoneNo" : this.formDetail.phoneNo,
+          "remark" : this.formDetail.remark,
+          "plateNo" : this.formDetail.plateNo,
+          "milage" : this.formDetail.milage,
+          "wax" : this.formDetail.wax,
+          "wash" : this.formDetail.wash,
+          "polish" : this.formDetail.polish,
+          "disinfection" : this.formDetail.disinfection
+      });
+      this.$axios({
+          method: 'post',
+          url: 'http://localhost:3000/api/modify',
+          data: postData
+      }).then((res)=>{
+          console.log(res.data)
+          if ( !!res.data.success ) {
+            this.$message({
+              message: res.data.success,
+              type: 'success'
+            });
+          }
+          if ( !!res.data.error ) {
+            this.$message({
+              message: res.data.error,
+              type: 'error'
+            });
+          }
+      });
+    },
+    service( serviceName ) {
+      console.log(serviceName)
+      let postData = this.$qs.stringify({
+          "phoneNo" : this.formDetail.phoneNo
+      });
+      this.$axios({
+          method: 'post',
+          url: 'http://localhost:3000/api/' + serviceName,
+          data: postData
+      }).then((res)=>{
+          if ( !!res.data.success ) {
+            this.$message.success(res.data.success);
+            this.querySingle()
+          }
+          if ( !!res.data.error ) {
+            this.$message.error(res.data.error);
+          }
       });
     }
   },

@@ -1,6 +1,6 @@
 <template>
-<el-container style="height: 700px; border: 1px solid #eee">
-
+<el-container style="border: 1px solid #eee">
+<!-- height: 700px;  -->
   <el-container>
     <el-header style="text-align: right; font-size: 12px">
        <!-- @select="handleSelect" :default-active="activeIndex"  -->
