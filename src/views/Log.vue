@@ -16,48 +16,23 @@
           <el-button @click="resetForm('numberValidateForm')">重置</el-button>
         </el-form-item>
       </el-form>
-      <br><br>
-      <el-form :label-position="labelPosition" label-width="120px" :model="formDetail">
-        <el-form-item label="手机号码"><el-input v-model="formDetail.phoneNo" disabled style="width: 300px;"></el-input></el-form-item>
-        <el-form-item label="车牌号"><el-input v-model="formDetail.plateNo" style="width: 300px;"></el-input></el-form-item>
-        <el-form-item label="公里数"><el-input v-model="formDetail.milage" style="width: 300px;"></el-input></el-form-item>
-        <el-form-item label="打蜡次数">
-          <el-input v-model="formDetail.wax" style="width: 300px;"></el-input>
-          <el-button type="warning" @click="service('wax')" style="margin-left: 10px;">进行打蜡</el-button>
-        </el-form-item>
-        <el-form-item label="精洗次数">
-          <el-input v-model="formDetail.wash" style="width: 300px;"></el-input>
-          <el-button type="warning" @click="service('wash')" style="margin-left: 10px;">进行精洗</el-button>
-        </el-form-item>
-        <el-form-item label="抛光次数">
-          <el-input v-model="formDetail.polish" style="width: 300px;"></el-input>
-          <el-button type="warning" @click="service('polish')" style="margin-left: 10px;">进行抛光</el-button>
-        </el-form-item>
-        <el-form-item label="车内消毒次数">
-          <el-input v-model="formDetail.disinfection" style="width: 300px;"></el-input>
-          <el-button type="warning" @click="service('disinfection')" style="margin-left: 10px;">进行消毒</el-button>
-        </el-form-item>
-        <el-form-item label="备注"><el-input v-model="formDetail.remark" style="width: 300px;"></el-input></el-form-item>
-        
-        <el-button type="primary" @click="gotoDetail()">查看详情</el-button>
-        <el-button type="primary" @click="gotoLog()">查看日志</el-button>
-        <br><br>
-        <el-button type="warning" @click="modify()">修改</el-button>
-      </el-form>
     </el-row>
-    <br><br><br><br><br>
+    <br><br><br>
     <el-row>
-      <el-button type="primary" v-on:click="queryAll">查询全部</el-button>
+      <!-- <el-button type="primary" v-on:click="queryAll">查询全部</el-button> -->
       <el-table :data="tables.slice( (pageIndex-1)*pageSize, pageIndex*pageSize )">
         <el-table-column type="index" label="序号" width=""></el-table-column>
-        <el-table-column prop="phoneNo" label="手机号码" width=""></el-table-column>
-        <el-table-column prop="remark" label="备注" width=""></el-table-column>
-        <el-table-column prop="plateNo" label="车牌号" width=""></el-table-column>
-        <el-table-column prop="milage" label="公里数" width=""></el-table-column>
-        <el-table-column prop="wax" label="打蜡次数" width=""></el-table-column>
-        <el-table-column prop="wash" label="精洗次数" width=""></el-table-column>
-        <el-table-column prop="polish" label="抛光次数" width=""></el-table-column>
-        <el-table-column prop="disinfection" label="车内消读次数" width=""></el-table-column>
+        <el-table-column prop="time" label="时间" width=""></el-table-column>
+        <el-table-column label="操作" width="">
+          <template slot-scope="scope">
+            {{ scope.row.operation | operationDict }}
+          </template>
+        </el-table-column>
+        <!-- <el-table-column prop="operation" label="操作" width="">
+          <template slot-scope="scope">
+            {{ tableData.operation }}
+          </template>
+        </el-table-column> -->
       </el-table>
       <div class="block">
         <el-pagination
@@ -75,7 +50,6 @@
 </template>
 
 <script>
-import router from './../router'
 export default {
   name: 'HelloWorld',
   props: {
@@ -86,7 +60,7 @@ export default {
     submitForm(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.querySingle()
+          this.queryLog()
         } else {
           console.log('error submit!!');
           return false;
@@ -107,10 +81,15 @@ export default {
     handleSelect(key, keyPath) {
       console.log(key, keyPath);
     },
-    queryAll() {
+    queryLog() {
+      console.log(this.numberValidateForm.phone)
+      let postData = this.$qs.stringify({
+          "phoneNo" : this.numberValidateForm.phone
+      });
       this.$axios({
           method: 'post',
-          url: 'http://localhost:3000/api/queryAll'
+          url: 'http://localhost:3000/api/log',
+          data: postData
       }).then((res)=>{
           console.log(res.data)
           if ( !!res.data.error ) {
@@ -120,7 +99,7 @@ export default {
           this.pageIndex = 1
       });
       /* var that = this
-      fetch('http://localhost:3000/api/queryAll',{
+      fetch('http://localhost:3000/api/log',{
           method:'POST'
         }).then(function(response) {
           console.log(response)
@@ -207,17 +186,14 @@ export default {
             this.$message.error(res.data.error);
           }
       });
-    },
-    gotoDetail() {
-      router.push({ path: 'detail', query: { phoneNo: this.numberValidateForm.phone } })
-    },
-    gotoLog() {
-      router.push({ path: 'log', query: { phoneNo: this.numberValidateForm.phone } })
     }
   },
-  created: function () {
-    console.log(this.activeIndex)
-    this.queryAll()
+  mounted: function () {
+    console.log(this.$route.query.phoneNo)
+    if ( !!this.$route.query.phoneNo ) {
+      this.numberValidateForm.phone = Number(this.$route.query.phoneNo)
+      this.submitForm('numberValidateForm')
+    }
   },
   computed: {
     // 前端过滤
@@ -237,10 +213,42 @@ export default {
       return this.tables.length
     }
   },
+  filters:{
+    filterContent: function (items) {
+      let arr=[];
+      function operationDict(eng) {
+        var dict = {
+          'modify': 'xiugai'
+        }
+        return dict(eng)
+      }
+      for(let i= 0;i<items.length; i++){
+          arr[i] = {};
+          arr[i].time = items[i].time;
+          arr[i].operation = operationDict(items[i].operation);
+      }
+      return arr;
+    },
+    operationDict: function (value) {
+      if (!value) return ''
+      var dict = {
+        'create': '创建',
+        'modify': '修改',
+        'wax': '打蜡',
+        'wash': '精洗',
+        'polish': '抛光',
+        'disinfection': '车内消毒'
+      }
+      return dict[value] || value
+    }
+  },
   watch: {
    // 检测表格数据过滤变化，自动跳到第一页
     tables () {
       this.pageIndex = 1
+    },
+    filterContent: function(val, oldVal){
+        this.tableData = this.otableData.filter( item => (~item.name.indexOf(val)));
     }
   },
   data() {

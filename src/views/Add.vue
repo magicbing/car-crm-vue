@@ -1,81 +1,30 @@
 <template>
   <el-main>
     <el-row>
-      <el-form :model="numberValidateForm" ref="numberValidateForm" label-width="120px" class="demo-ruleForm">
-        <el-form-item label="手机号码" prop="phone"
-          :rules="[
-            { required: true, message: '手机号码不能为空'},
-            { type: 'number', message: '手机号码必须为数字值'}
-          ]"
-        >
-          <el-input type="phone" v-model.number="numberValidateForm.phone" auto-complete="off" style="width: 300px;"></el-input>
-        </el-form-item>
-        <el-form-item>
-          <!-- <el-button type="primary" @click="submitForm('numberValidateForm')">提交</el-button> -->
-          <el-button type="primary" @click="submitForm('numberValidateForm')">查询</el-button>
-          <el-button @click="resetForm('numberValidateForm')">重置</el-button>
-        </el-form-item>
-      </el-form>
-      <br><br>
       <el-form :label-position="labelPosition" label-width="120px" :model="formDetail">
-        <el-form-item label="手机号码"><el-input v-model="formDetail.phoneNo" disabled style="width: 300px;"></el-input></el-form-item>
+        <el-form-item label="手机号码"><el-input v-model="formDetail.phoneNo" style="width: 300px;"></el-input></el-form-item>
         <el-form-item label="车牌号"><el-input v-model="formDetail.plateNo" style="width: 300px;"></el-input></el-form-item>
         <el-form-item label="公里数"><el-input v-model="formDetail.milage" style="width: 300px;"></el-input></el-form-item>
         <el-form-item label="打蜡次数">
           <el-input v-model="formDetail.wax" style="width: 300px;"></el-input>
-          <el-button type="warning" @click="service('wax')" style="margin-left: 10px;">进行打蜡</el-button>
         </el-form-item>
         <el-form-item label="精洗次数">
           <el-input v-model="formDetail.wash" style="width: 300px;"></el-input>
-          <el-button type="warning" @click="service('wash')" style="margin-left: 10px;">进行精洗</el-button>
         </el-form-item>
         <el-form-item label="抛光次数">
           <el-input v-model="formDetail.polish" style="width: 300px;"></el-input>
-          <el-button type="warning" @click="service('polish')" style="margin-left: 10px;">进行抛光</el-button>
         </el-form-item>
         <el-form-item label="车内消毒次数">
           <el-input v-model="formDetail.disinfection" style="width: 300px;"></el-input>
-          <el-button type="warning" @click="service('disinfection')" style="margin-left: 10px;">进行消毒</el-button>
         </el-form-item>
         <el-form-item label="备注"><el-input v-model="formDetail.remark" style="width: 300px;"></el-input></el-form-item>
-        
-        <el-button type="primary" @click="gotoDetail()">查看详情</el-button>
-        <el-button type="primary" @click="gotoLog()">查看日志</el-button>
-        <br><br>
-        <el-button type="warning" @click="modify()">修改</el-button>
+      <el-button type="warning" @click="add()">新增</el-button>
       </el-form>
-    </el-row>
-    <br><br><br><br><br>
-    <el-row>
-      <el-button type="primary" v-on:click="queryAll">查询全部</el-button>
-      <el-table :data="tables.slice( (pageIndex-1)*pageSize, pageIndex*pageSize )">
-        <el-table-column type="index" label="序号" width=""></el-table-column>
-        <el-table-column prop="phoneNo" label="手机号码" width=""></el-table-column>
-        <el-table-column prop="remark" label="备注" width=""></el-table-column>
-        <el-table-column prop="plateNo" label="车牌号" width=""></el-table-column>
-        <el-table-column prop="milage" label="公里数" width=""></el-table-column>
-        <el-table-column prop="wax" label="打蜡次数" width=""></el-table-column>
-        <el-table-column prop="wash" label="精洗次数" width=""></el-table-column>
-        <el-table-column prop="polish" label="抛光次数" width=""></el-table-column>
-        <el-table-column prop="disinfection" label="车内消读次数" width=""></el-table-column>
-      </el-table>
-      <div class="block">
-        <el-pagination
-          @size-change="handleSizeChange"
-          @current-change="handleCurrentChange"
-          :current-page="pageIndex"
-          :page-sizes="[10, 20, 30, 100]"
-          :page-size="pageSize"
-          layout="total, sizes, prev, pager, next, jumper"
-          :total="total">
-        </el-pagination>
-      </div>
     </el-row>
   </el-main>
 </template>
 
 <script>
-import router from './../router'
 export default {
   name: 'HelloWorld',
   props: {
@@ -108,18 +57,7 @@ export default {
       console.log(key, keyPath);
     },
     queryAll() {
-      this.$axios({
-          method: 'post',
-          url: 'http://localhost:3000/api/queryAll'
-      }).then((res)=>{
-          console.log(res.data)
-          if ( !!res.data.error ) {
-            this.$message.error(res.data.error);
-          }
-          this.tableData = res.data.reverse()
-          this.pageIndex = 1
-      });
-      /* var that = this
+      var that = this
       fetch('http://localhost:3000/api/queryAll',{
           method:'POST'
         }).then(function(response) {
@@ -132,7 +70,7 @@ export default {
         that.pageIndex = 1
       }).catch(function(e) {
         console.log(e);
-      }); */
+      });
     },
     querySingle() {
       console.log(this.numberValidateForm.phone)
@@ -145,9 +83,6 @@ export default {
           data: postData
       }).then((res)=>{
           console.log(res.data)
-          if ( !!res.data.error ) {
-            this.$message.error(res.data.error);
-          }
           this.formDetail.phoneNo = res.data.phoneNo
           this.formDetail.remark = res.data.remark
           this.formDetail.plateNo = res.data.plateNo
@@ -158,7 +93,7 @@ export default {
           this.formDetail.disinfection = res.data.disinfection
       });
     },
-    modify() {
+    add() {
       let postData = this.$qs.stringify({
           "phoneNo" : this.formDetail.phoneNo,
           "remark" : this.formDetail.remark,
@@ -171,7 +106,7 @@ export default {
       });
       this.$axios({
           method: 'post',
-          url: 'http://localhost:3000/api/modify',
+          url: 'http://localhost:3000/api/add',
           data: postData
       }).then((res)=>{
           console.log(res.data)
@@ -207,12 +142,6 @@ export default {
             this.$message.error(res.data.error);
           }
       });
-    },
-    gotoDetail() {
-      router.push({ path: 'detail', query: { phoneNo: this.numberValidateForm.phone } })
-    },
-    gotoLog() {
-      router.push({ path: 'log', query: { phoneNo: this.numberValidateForm.phone } })
     }
   },
   created: function () {

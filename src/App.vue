@@ -4,19 +4,18 @@
   <el-container>
     <el-header style="text-align: right; font-size: 12px">
        <!-- @select="handleSelect" :default-active="activeIndex"  -->
-      <el-menu router class="el-menu-demo" mode="horizontal">
+      <el-menu :default-active="$route.path" class="el-menu-demo" mode="horizontal" router>
         <el-menu-item index="/">查询</el-menu-item>
         <el-menu-item index="/add">新增</el-menu-item>
         <el-menu-item index="/detail">详情</el-menu-item>
-        <el-menu-item index="/about">About</el-menu-item>
-        <!-- <el-menu-item index="4">修改日志</el-menu-item> -->
+        <el-menu-item index="/log">日志</el-menu-item>
+        <!-- <el-menu-item index="/about">About</el-menu-item> -->
       </el-menu>
     </el-header>
 
     <router-view/>
     
   </el-container>
-</el-container>
   <!-- <div id="app">
     <div id="nav">
       <router-link to="/">Home</router-link> |
@@ -26,6 +25,7 @@
     </div>
     <router-view/>
   </div> -->
+</el-container>
 </template>
 <script>
 export default {
@@ -38,6 +38,11 @@ export default {
   data() {
     return {
       activeIndex: '1'
+    }
+  },
+  computed: {
+    onRoutes() {
+      return this.$route.path.replace('/', '')
     }
   }
 }
