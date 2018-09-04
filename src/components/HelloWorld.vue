@@ -4,11 +4,11 @@
       <el-form :model="numberValidateForm" ref="numberValidateForm" label-width="120px" class="demo-ruleForm">
         <el-form-item label="手机号码" prop="phone"
           :rules="[
-            { required: true, message: '手机号码不能为空'},
-            { type: 'number', message: '手机号码必须为数字值'}
+            { required: true, message: '手机号码不能为空'}
+            /* , { type: 'number', message: '手机号码必须为数字值'} */
           ]"
         >
-          <el-input type="phone" v-model.number="numberValidateForm.phone" auto-complete="off" style="width: 300px;"></el-input>
+          <el-input type="phone" v-model="numberValidateForm.phone" auto-complete="off" style="width: 300px;"></el-input>
         </el-form-item>
         <el-form-item>
           <!-- <el-button type="primary" @click="submitForm('numberValidateForm')">提交</el-button> -->
@@ -47,17 +47,25 @@
     </el-row>
     <br><br><br><br><br>
     <el-row>
-      <el-button type="primary" v-on:click="queryAll">查询全部</el-button>
+      <el-button type="primary" v-on:click="queryAll">刷新查询全部</el-button>
       <el-table :data="tables.slice( (pageIndex-1)*pageSize, pageIndex*pageSize )">
         <el-table-column type="index" label="序号" width=""></el-table-column>
         <el-table-column prop="phoneNo" label="手机号码" width=""></el-table-column>
-        <el-table-column prop="remark" label="备注" width=""></el-table-column>
         <el-table-column prop="plateNo" label="车牌号" width=""></el-table-column>
         <el-table-column prop="milage" label="公里数" width=""></el-table-column>
         <el-table-column prop="wax" label="打蜡次数" width=""></el-table-column>
         <el-table-column prop="wash" label="精洗次数" width=""></el-table-column>
         <el-table-column prop="polish" label="抛光次数" width=""></el-table-column>
-        <el-table-column prop="disinfection" label="车内消读次数" width=""></el-table-column>
+        <el-table-column prop="disinfection" label="车内消毒次数" width=""></el-table-column>
+        <el-table-column prop="remark" label="备注" width=""></el-table-column>
+        <el-table-column label="操作" width="215px">
+          <template slot-scope="scope">
+            <el-button type="primary" size="mini" @click="querySingle(scope.row.phoneNo)">查询</el-button>
+            <el-button type="primary" size="mini" @click="gotoDetail(scope.row.phoneNo)">详情</el-button>
+            <el-button type="primary" size="mini" @click="gotoLog(scope.row.phoneNo)">日志</el-button>
+            <!-- {{ scope.row.operation }} -->
+          </template>
+        </el-table-column>
       </el-table>
       <div class="block">
         <el-pagination
@@ -134,10 +142,10 @@ export default {
         console.log(e);
       }); */
     },
-    querySingle() {
+    querySingle(phone) {
       console.log(this.numberValidateForm.phone)
       let postData = this.$qs.stringify({
-          "phoneNo" : this.numberValidateForm.phone
+          "phoneNo" : phone || this.numberValidateForm.phone
       });
       this.$axios({
           method: 'post',
@@ -190,7 +198,46 @@ export default {
       });
     },
     service( serviceName ) {
-      console.log(serviceName)
+      function dict (value) {
+        var dict = {
+          'create': '创建',
+          'modify': '修改',
+          'wax': '打蜡',
+          'wash': '精洗',
+          'polish': '抛光',
+          'disinfection': '车内消毒'
+        }
+        return dict[value] || value
+      }
+      this.$confirm('确定执行 ' + dict(serviceName) + ' 操作吗', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        console.log(serviceName)
+        let postData = this.$qs.stringify({
+            "phoneNo" : this.formDetail.phoneNo
+        });
+        this.$axios({
+            method: 'post',
+            url: 'http://localhost:3000/api/' + serviceName,
+            data: postData
+        }).then((res)=>{
+            if ( !!res.data.success ) {
+              this.$message.success(res.data.success);
+              this.querySingle(this.formDetail.phoneNo)
+            }
+            if ( !!res.data.error ) {
+              this.$message.error(res.data.error);
+            }
+        });
+      }).catch(() => {
+        this.$message({
+          type: 'info',
+          message: '已取消'
+        });          
+      });
+      /* console.log(serviceName)
       let postData = this.$qs.stringify({
           "phoneNo" : this.formDetail.phoneNo
       });
@@ -206,13 +253,13 @@ export default {
           if ( !!res.data.error ) {
             this.$message.error(res.data.error);
           }
-      });
+      }); */
     },
-    gotoDetail() {
-      router.push({ path: 'detail', query: { phoneNo: this.numberValidateForm.phone } })
+    gotoDetail(phone) {
+      router.push({ path: 'detail', query: { phoneNo: phone || this.numberValidateForm.phone } })
     },
-    gotoLog() {
-      router.push({ path: 'log', query: { phoneNo: this.numberValidateForm.phone } })
+    gotoLog(phone) {
+      router.push({ path: 'log', query: { phoneNo: phone || this.numberValidateForm.phone } })
     }
   },
   created: function () {

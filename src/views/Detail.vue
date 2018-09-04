@@ -4,11 +4,11 @@
       <el-form :model="numberValidateForm" ref="numberValidateForm" label-width="120px" class="demo-ruleForm">
         <el-form-item label="手机号码" prop="phone"
           :rules="[
-            { required: true, message: '手机号码不能为空'},
-            { type: 'number', message: '手机号码必须为数字值'}
+            { required: true, message: '手机号码不能为空'}
+            /* , { type: 'number', message: '手机号码必须为数字值'} */
           ]"
         >
-          <el-input type="phone" v-model.number="numberValidateForm.phone" auto-complete="off" style="width: 300px;"></el-input>
+          <el-input type="phone" v-model="numberValidateForm.phone" auto-complete="off" style="width: 300px;"></el-input>
         </el-form-item>
         <el-form-item>
           <!-- <el-button type="primary" @click="submitForm('numberValidateForm')">提交</el-button> -->
